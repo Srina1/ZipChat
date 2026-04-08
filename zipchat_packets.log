@@ -1,0 +1,459 @@
+========================================================================
+  ZipChat WebSocket Packet Log
+  Started: 2026-04-08T07:00:09.480Z
+  Port: 8082
+========================================================================
+
+
+========================================================================
+[CONNECT] 2026-04-08T07:00:18.667Z
+  Client ID : 1
+  IP        : ::1
+  Total     : 1 connected
+========================================================================
+[PKT #1] 2026-04-08T07:00:18.675Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : (unauth)
+  Msg Type  : auth_token
+  Class     : 🔵 JWT AUTH
+  Enc Note  : Signed JWT token — server verifies, no password in wire
+  Payload   : {"tokenLength":171}
+------------------------------------------------------------------------
+[PKT #2] 2026-04-08T07:00:18.741Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : auth_ok
+  Class     : 🟢 AUTH SUCCESS
+  Enc Note  : Login confirmed
+  Payload   : {"username":"bivaa"}
+------------------------------------------------------------------------
+
+========================================================================
+[CONNECT] 2026-04-08T07:00:21.853Z
+  Client ID : 2
+  IP        : ::1
+  Total     : 2 connected
+========================================================================
+[PKT #3] 2026-04-08T07:00:21.862Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : (unauth)
+  Msg Type  : auth_token
+  Class     : 🔵 JWT AUTH
+  Enc Note  : Signed JWT token — server verifies, no password in wire
+  Payload   : {"tokenLength":176}
+------------------------------------------------------------------------
+[PKT #4] 2026-04-08T07:00:21.874Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : auth_ok
+  Class     : 🟢 AUTH SUCCESS
+  Enc Note  : Login confirmed
+  Payload   : {"username":"srinaaa"}
+------------------------------------------------------------------------
+[PKT #5] 2026-04-08T07:00:21.882Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : kyber_hello
+  Class     : 🟢 KEY EXCHANGE INIT
+  Enc Note  : Handshake start — no secret data
+  Payload   : {"to":2}
+------------------------------------------------------------------------
+[PKT #6] 2026-04-08T07:00:21.886Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:kyber_hello
+  Class     : ⚪ CONTROL FRAME
+  Enc Note  : Signalling only
+  Payload   : {"fromUser":"bivaa","toUser":"srinaaa"}
+------------------------------------------------------------------------
+[PKT #7] 2026-04-08T07:00:21.908Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : kyber_pubkey
+  Class     : 🟡 ML-KEM-768 PUBLIC KEY
+  Enc Note  : Public key only — safe to transmit, no secret exposed
+  Payload   : {"to":1,"publicKey":"[1184 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #8] 2026-04-08T07:00:21.909Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:kyber_pubkey
+  Class     : 🟡 ML-KEM-768 PUBLIC KEY
+  Enc Note  : Public key only — safe to transmit, no secret exposed
+  Payload   : {"publicKey":"[1184 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"bivaa"}
+------------------------------------------------------------------------
+[PKT #9] 2026-04-08T07:00:21.942Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : kyber_ct
+  Class     : 🟡 ML-KEM-768 CIPHERTEXT
+  Enc Note  : Encapsulated ciphertext — shared secret NOT derivable from this
+  Payload   : {"to":2,"cipherText":"[1088 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #10] 2026-04-08T07:00:21.944Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:kyber_ct
+  Class     : 🟡 ML-KEM-768 CIPHERTEXT
+  Enc Note  : Encapsulated ciphertext — shared secret NOT derivable from this
+  Payload   : {"cipherText":"[1088 bytes — encrypted, not shown]","fromUser":"bivaa","toUser":"srinaaa"}
+------------------------------------------------------------------------
+[PKT #11] 2026-04-08T07:00:24.612Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":1,"cipherText":"[20 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #12] 2026-04-08T07:00:24.614Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[20 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"bivaa"}
+------------------------------------------------------------------------
+[PKT #13] 2026-04-08T07:00:27.534Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":2,"cipherText":"[19 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #14] 2026-04-08T07:00:27.535Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[19 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"bivaa","toUser":"srinaaa"}
+------------------------------------------------------------------------
+[PKT #15] 2026-04-08T07:00:46.576Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":1,"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #16] 2026-04-08T07:00:46.580Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"bivaa"}
+------------------------------------------------------------------------
+[PKT #17] 2026-04-08T07:00:49.448Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":2,"cipherText":"[19 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #18] 2026-04-08T07:00:49.449Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[19 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"bivaa","toUser":"srinaaa"}
+------------------------------------------------------------------------
+[PKT #19] 2026-04-08T07:03:01.340Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":1,"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #20] 2026-04-08T07:03:01.343Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"bivaa"}
+------------------------------------------------------------------------
+[PKT #21] 2026-04-08T07:03:02.645Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":2,"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #22] 2026-04-08T07:03:02.648Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"bivaa","toUser":"srinaaa"}
+------------------------------------------------------------------------
+
+========================================================================
+[CONNECT] 2026-04-08T07:04:00.754Z
+  Client ID : 3
+  IP        : ::1
+  Total     : 3 connected
+========================================================================
+[PKT #23] 2026-04-08T07:04:00.812Z
+  Direction : CLIENT → SERVER
+  Client ID : 3
+  Username  : (unauth)
+  Msg Type  : auth_token
+  Class     : 🔵 JWT AUTH
+  Enc Note  : Signed JWT token — server verifies, no password in wire
+  Payload   : {"tokenLength":187}
+------------------------------------------------------------------------
+[PKT #24] 2026-04-08T07:04:00.847Z
+  Direction : SERVER → CLIENT
+  Client ID : 3
+  Username  : hello_world
+  Msg Type  : auth_ok
+  Class     : 🟢 AUTH SUCCESS
+  Enc Note  : Login confirmed
+  Payload   : {"username":"hello_world"}
+------------------------------------------------------------------------
+[PKT #25] 2026-04-08T07:04:00.873Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : kyber_hello
+  Class     : 🟢 KEY EXCHANGE INIT
+  Enc Note  : Handshake start — no secret data
+  Payload   : {"to":3}
+------------------------------------------------------------------------
+[PKT #26] 2026-04-08T07:04:00.884Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:kyber_hello
+  Class     : ⚪ CONTROL FRAME
+  Enc Note  : Signalling only
+  Payload   : {"fromUser":"bivaa","toUser":"hello_world"}
+------------------------------------------------------------------------
+[PKT #27] 2026-04-08T07:04:00.897Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : kyber_hello
+  Class     : 🟢 KEY EXCHANGE INIT
+  Enc Note  : Handshake start — no secret data
+  Payload   : {"to":3}
+------------------------------------------------------------------------
+[PKT #28] 2026-04-08T07:04:00.907Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:kyber_hello
+  Class     : ⚪ CONTROL FRAME
+  Enc Note  : Signalling only
+  Payload   : {"fromUser":"srinaaa","toUser":"hello_world"}
+------------------------------------------------------------------------
+[PKT #29] 2026-04-08T07:04:00.930Z
+  Direction : CLIENT → SERVER
+  Client ID : 3
+  Username  : hello_world
+  Msg Type  : kyber_pubkey
+  Class     : 🟡 ML-KEM-768 PUBLIC KEY
+  Enc Note  : Public key only — safe to transmit, no secret exposed
+  Payload   : {"to":1,"publicKey":"[1184 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #30] 2026-04-08T07:04:00.938Z
+  Direction : SERVER → CLIENT
+  Client ID : 3
+  Username  : hello_world
+  Msg Type  : relay:kyber_pubkey
+  Class     : 🟡 ML-KEM-768 PUBLIC KEY
+  Enc Note  : Public key only — safe to transmit, no secret exposed
+  Payload   : {"publicKey":"[1184 bytes — encrypted, not shown]","fromUser":"hello_world","toUser":"bivaa"}
+------------------------------------------------------------------------
+[PKT #31] 2026-04-08T07:04:00.951Z
+  Direction : CLIENT → SERVER
+  Client ID : 3
+  Username  : hello_world
+  Msg Type  : kyber_pubkey
+  Class     : 🟡 ML-KEM-768 PUBLIC KEY
+  Enc Note  : Public key only — safe to transmit, no secret exposed
+  Payload   : {"to":2,"publicKey":"[1184 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #32] 2026-04-08T07:04:00.963Z
+  Direction : SERVER → CLIENT
+  Client ID : 3
+  Username  : hello_world
+  Msg Type  : relay:kyber_pubkey
+  Class     : 🟡 ML-KEM-768 PUBLIC KEY
+  Enc Note  : Public key only — safe to transmit, no secret exposed
+  Payload   : {"publicKey":"[1184 bytes — encrypted, not shown]","fromUser":"hello_world","toUser":"srinaaa"}
+------------------------------------------------------------------------
+[PKT #33] 2026-04-08T07:04:00.978Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : kyber_ct
+  Class     : 🟡 ML-KEM-768 CIPHERTEXT
+  Enc Note  : Encapsulated ciphertext — shared secret NOT derivable from this
+  Payload   : {"to":3,"cipherText":"[1088 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #34] 2026-04-08T07:04:00.996Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:kyber_ct
+  Class     : 🟡 ML-KEM-768 CIPHERTEXT
+  Enc Note  : Encapsulated ciphertext — shared secret NOT derivable from this
+  Payload   : {"cipherText":"[1088 bytes — encrypted, not shown]","fromUser":"bivaa","toUser":"hello_world"}
+------------------------------------------------------------------------
+[PKT #35] 2026-04-08T07:04:01.025Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : kyber_ct
+  Class     : 🟡 ML-KEM-768 CIPHERTEXT
+  Enc Note  : Encapsulated ciphertext — shared secret NOT derivable from this
+  Payload   : {"to":3,"cipherText":"[1088 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #36] 2026-04-08T07:04:01.040Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:kyber_ct
+  Class     : 🟡 ML-KEM-768 CIPHERTEXT
+  Enc Note  : Encapsulated ciphertext — shared secret NOT derivable from this
+  Payload   : {"cipherText":"[1088 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"hello_world"}
+------------------------------------------------------------------------
+[PKT #37] 2026-04-08T07:06:26.556Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":1,"cipherText":"[19 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #38] 2026-04-08T07:06:26.559Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[19 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"bivaa"}
+------------------------------------------------------------------------
+[PKT #39] 2026-04-08T07:06:26.560Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":3,"cipherText":"[19 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #40] 2026-04-08T07:06:26.562Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[19 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"hello_world"}
+------------------------------------------------------------------------
+[PKT #41] 2026-04-08T07:06:29.555Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":2,"cipherText":"[20 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #42] 2026-04-08T07:06:29.557Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[20 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"bivaa","toUser":"srinaaa"}
+------------------------------------------------------------------------
+[PKT #43] 2026-04-08T07:06:29.559Z
+  Direction : CLIENT → SERVER
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":3,"cipherText":"[20 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #44] 2026-04-08T07:06:29.560Z
+  Direction : SERVER → CLIENT
+  Client ID : 1
+  Username  : bivaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[20 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"bivaa","toUser":"hello_world"}
+------------------------------------------------------------------------
+[PKT #45] 2026-04-08T07:08:00.248Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":1,"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #46] 2026-04-08T07:08:00.252Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"bivaa"}
+------------------------------------------------------------------------
+[PKT #47] 2026-04-08T07:08:00.255Z
+  Direction : CLIENT → SERVER
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : chat
+  Class     : 🔴 ENCRYPTED CHAT MESSAGE
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"to":3,"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]"}
+------------------------------------------------------------------------
+[PKT #48] 2026-04-08T07:08:00.258Z
+  Direction : SERVER → CLIENT
+  Client ID : 2
+  Username  : srinaaa
+  Msg Type  : relay:chat
+  Class     : 🔴 ENCRYPTED CHAT RELAY
+  Enc Note  : PLAINTEXT NOT VISIBLE — AES-256-GCM encrypted payload
+  Payload   : {"cipherText":"[21 bytes — encrypted, not shown]","iv":"[12 bytes — encrypted, not shown]","fromUser":"srinaaa","toUser":"hello_world"}
+------------------------------------------------------------------------

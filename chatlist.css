@@ -1,0 +1,124 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #cfeffd;
+    font-family: Arial, Helvetica, sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app {
+    width: 360px;
+    height: 640px;
+    background: #f7f9fb;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.header {
+    padding: 25px;
+    background: linear-gradient(135deg, #4ef0c2, #6ce3ff);
+    color: white;
+}
+
+.header h1 {
+    font-size: 26px;
+}
+
+.header p {
+    font-size: 14px;
+}
+
+.search-box {
+    padding: 15px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+}
+
+.chat-list {
+    padding: 10px;
+    height: calc(100% - 140px);
+    overflow-y: auto;
+}
+
+.chat {
+    background: white;
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.chat.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    background: #3b82f6;
+    border-radius: 10px;
+}
+
+.avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 15px;
+    background: #dbe4ff;
+    color: #3b5bfd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 12px;
+}
+
+.chat-info {
+    flex: 1;
+}
+
+.chat-info h3 {
+    font-size: 15px;
+}
+
+.chat-info p {
+    font-size: 13px;
+    color: #666;
+}
+
+.time {
+    font-size: 12px;
+    color: #888;
+}
+
+.unread-badge {
+    background: #ff4444;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 11px;
+    margin-left: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}

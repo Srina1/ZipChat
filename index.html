@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ZipChat</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:      #08090c;
+            --surface: #10131a;
+            --border:  #1e2336;
+            --accent:  #00e5ff;
+            --accent2: #6c3fff;
+            --text:    #dde3f0;
+            --muted:   #4a5270;
+            --red:     #ff4560;
+            --green:   #1aff8c;
+            --mono:    'IBM Plex Mono', monospace;
+            --sans:    'Syne', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* grid bg */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+        }
+
+        .welcome-container {
+            position: relative; z-index: 1;
+            width: 380px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px 32px 32px;
+            animation: rise 0.4s cubic-bezier(.16,1,.3,1);
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(120deg, var(--accent), var(--accent2));
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 32px;
+        }
+
+        /* tabs */
+        .tabs {
+            display: flex; gap: 3px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 3px;
+            margin-bottom: 22px;
+        }
+        .tab {
+            flex: 1; text-align: center;
+            padding: 9px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--muted);
+            transition: all 0.18s;
+            border: 1px solid transparent;
+        }
+        .tab.active {
+            background: var(--surface);
+            color: var(--accent);
+            border-color: var(--border);
+        }
+
+        /* banner */
+        .banner {
+            border-radius: 7px;
+            padding: 9px 13px;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            margin-bottom: 14px;
+            display: none;
+        }
+        .banner.error { background: rgba(255,69,96,0.1); border: 1px solid rgba(255,69,96,0.3); color: var(--red); }
+        .banner.info  { background: rgba(26,255,140,0.07); border: 1px solid rgba(26,255,140,0.25); color: var(--green); }
+        .banner.show  { display: block; }
+
+        /* fields */
+        .field { margin-bottom: 13px; }
+        .field label {
+            display: block;
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+        .field input, .username-input, .password-input {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.18s;
+        }
+        .field input:focus, .username-input:focus, .password-input:focus {
+            border-color: var(--accent);
+        }
+
+        /* button */
+        .startBtn, .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.18s;
+            margin-top: 6px;
+            background: linear-gradient(120deg, var(--accent), #009ab8);
+            color: #000;
+        }
+        .startBtn:hover:not(:disabled), .btn:hover:not(:disabled) {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+        .startBtn:disabled, .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer {
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            color: var(--muted);
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="welcome-container">
+    <div class="logo">⚡ ZipChat</div>
+    <div class="tagline">Post-Quantum · E2E Encrypted</div>
+
+    <div class="tabs">
+        <div class="tab active" id="tab-login"    onclick="switchTab('login')">LOGIN</div>
+        <div class="tab"        id="tab-register" onclick="switchTab('register')">REGISTER</div>
+    </div>
+
+    <div id="banner" class="banner error"></div>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+        <div class="field">
+            <label>Username</label>
+            <input class="username-input" id="login-username" type="text"
+                   placeholder="your_username" autocomplete="username">
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input class="password-input" id="login-password" type="password"
+                   placeholder="••••••••" autocomplete="current-password"
+                   onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <button class="startBtn" id="btn-login" onclick="doLogin()">LOGIN →</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="form-register" style="display:none">
+        <div class="field">
+            <label>Username</label>
+            <input class="username-input" id="reg-username" type="text"
+                   placeholder="choose_username" autocomplete="username">
+        </div>
+        <div class="field">
+            <label>Display Name</label>
+            <input class="username-input" id="reg-displayname" type="text"
+                   placeholder="Your Name">
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input class="password-input" id="reg-password" type="password"
+                   placeholder="••••••••" autocomplete="new-password"
+                   onkeydown="if(event.key==='Enter') doRegister()">
+        </div>
+        <button class="startBtn" id="btn-register" onclick="doRegister()">CREATE ACCOUNT →</button>
+    </div>
+
+    <div class="footer">© 2026 ZipChat</div>
+</div>
+
+<script>
+const AUTH = 'http://localhost:3000';
+
+function switchTab(tab) {
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    document.getElementById('form-login').style.display    = tab === 'login'    ? '' : 'none';
+    document.getElementById('form-register').style.display = tab === 'register' ? '' : 'none';
+    hideBanner();
+}
+
+function showBanner(msg, type = 'error') {
+    const el = document.getElementById('banner');
+    el.textContent = msg;
+    el.className = `banner ${type} show`;
+}
+function hideBanner() {
+    document.getElementById('banner').classList.remove('show');
+}
+
+async function doLogin() {
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!username || !password) return showBanner('Enter username and password.');
+
+    const btn = document.getElementById('btn-login');
+    btn.disabled = true;
+    btn.textContent = 'CHECKING...';
+
+    try {
+        const res = await fetch(`${AUTH}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!res.ok) return showBanner(await res.text());
+
+        const data = await res.json();
+        localStorage.setItem('zipchat_username', username);
+        localStorage.setItem('zipchat_temp_token', data.tempToken);
+
+        // Request OTP
+        await fetch(`${AUTH}/send-otp`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${data.tempToken}`
+            },
+            body: JSON.stringify({ username })
+        });
+
+        window.location.href = 'otp.html';
+
+    } catch {
+        showBanner('Cannot reach auth server. Is auth_server.py running on port 3000?');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'LOGIN →';
+    }
+}
+
+async function doRegister() {
+    const username    = document.getElementById('reg-username').value.trim();
+    const displayName = document.getElementById('reg-displayname').value.trim();
+    const password    = document.getElementById('reg-password').value;
+
+    if (!username || !password) return showBanner('Username and password required.');
+
+    const btn = document.getElementById('btn-register');
+    btn.disabled = true;
+    btn.textContent = 'CREATING...';
+
+    try {
+        const res = await fetch(`${AUTH}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, displayName })
+        });
+
+        if (!res.ok) return showBanner(await res.text());
+
+        showBanner('✓ Account created! You can now log in.', 'info');
+        switchTab('login');
+        document.getElementById('login-username').value = username;
+
+    } catch {
+        showBanner('Cannot reach auth server.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'CREATE ACCOUNT →';
+    }
+}
+
+// Redirect to chatlist if already logged in
+(async () => {
+    const token = localStorage.getItem('zipchat_token');
+    if (!token) return;
+    try {
+        const res = await fetch(`${AUTH}/verify-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+        const d = await res.json();
+        if (d.valid) window.location.href = 'chatlist.html';
+    } catch {}
+})();
+</script>
+</body>
+</html>

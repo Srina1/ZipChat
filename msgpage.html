@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZipChat</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#08090c;--surface:#10131a;--surface2:#141820;--border:#1e2336;
+            --accent:#00e5ff;--accent2:#6c3fff;--text:#dde3f0;--muted:#4a5270;
+            --red:#ff4560;--green:#1aff8c;--sent:#0e2240;--recv:#141820;
+            --mono:'IBM Plex Mono',monospace;--sans:'Syne',sans-serif;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:var(--sans);background:var(--bg);color:var(--text);height:100vh;display:flex;justify-content:center;}
+        body::before{content:'';position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;}
+        .chat-container{position:relative;z-index:1;width:100%;max-width:440px;height:100vh;background:var(--surface);border-left:1px solid var(--border);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+        .chat-header{display:flex;align-items:center;padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--border);gap:12px;}
+        .back-btn{font-size:1.2rem;cursor:pointer;color:var(--accent);padding:4px;transition:opacity .18s;}
+        .back-btn:hover{opacity:.7;}
+        .chat-header-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),#9f6fff);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0;}
+        .header-info{flex:1;min-width:0;}
+        .header-name{font-size:.95rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .header-status{font-family:var(--mono);font-size:.62rem;color:var(--muted);margin-top:2px;}
+        .header-status.secure{color:var(--accent);}
+        .header-status.online{color:var(--green);}
+        .enc-pill{display:flex;align-items:center;gap:5px;padding:3px 9px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.15);border-radius:20px;font-family:var(--mono);font-size:.58rem;color:var(--accent);flex-shrink:0;}
+        .enc-pill-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:blink 2.5s infinite;}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+        .messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:3px;}
+        .messages::-webkit-scrollbar{width:3px;}
+        .messages::-webkit-scrollbar-thumb{background:var(--border);}
+        .msg-group{display:flex;flex-direction:column;margin-bottom:8px;}
+        .msg-group.sent{align-items:flex-end;}
+        .msg-group.recv{align-items:flex-start;}
+        .msg-meta{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;gap:5px;}
+        .msg-meta .sender{font-weight:600;color:var(--text);}
+        .msg-meta .sender.me{color:var(--accent);}
+        .bubble{padding:9px 13px;border-radius:12px;max-width:78%;word-break:break-word;font-size:.88rem;line-height:1.5;animation:pop .18s cubic-bezier(.16,1,.3,1);}
+        @keyframes pop{from{opacity:0;transform:scale(.94) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        .msg-group.sent .bubble{background:var(--sent);border:1px solid rgba(0,229,255,.1);border-bottom-right-radius:4px;}
+        .msg-group.recv .bubble{background:var(--recv);border:1px solid var(--border);border-bottom-left-radius:4px;}
+        .status-pill{align-self:center;font-family:var(--mono);font-size:.62rem;color:var(--muted);padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;margin:6px 0;}
+        .input-bar{display:flex;align-items:center;padding:10px 12px;border-top:1px solid var(--border);background:var(--surface2);gap:10px;}
+        .input-bar input{flex:1;padding:11px 16px;background:var(--bg);border:1px solid var(--border);border-radius:24px;color:var(--text);font-family:var(--sans);font-size:.88rem;outline:none;transition:border-color .18s;}
+        .input-bar input:focus{border-color:var(--accent);}
+        .input-bar input:disabled{opacity:.35;cursor:not-allowed;}
+        .send-btn{width:42px;height:42px;border:none;border-radius:50%;background:linear-gradient(135deg,var(--accent),#009ab8);color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;}
+        .send-btn:hover:not(:disabled){transform:scale(1.08);}
+        .send-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+        .send-btn svg{width:17px;height:17px;}
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="back-btn" onclick="window.location.href='chatlist.html'">←</div>
+        <div class="chat-header-avatar" id="chat-avatar">?</div>
+        <div class="header-info">
+            <div class="header-name" id="chat-name">Loading...</div>
+            <div class="header-status" id="chat-status">Connecting...</div>
+        </div>
+        <div class="enc-pill"><div class="enc-pill-dot"></div>ML-KEM-768</div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-bar">
+        <input id="message" placeholder="Type a message..." disabled onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+    apiKey:            "AIzaSyCyXZ3jlv7aqg1A3kohWz2LW4y_pJHE3Ko",
+    authDomain:        "environment-setup-26ecc.firebaseapp.com",
+    databaseURL:       "https://environment-setup-26ecc-default-rtdb.firebaseio.com",
+    projectId:         "environment-setup-26ecc",
+    storageBucket:     "environment-setup-26ecc.firebasestorage.app",
+    messagingSenderId: "265208047784",
+    appId:             "1:265208047784:web:7b96cfa6b7c343ea95ba9d"
+});
+const db = firebase.database();
+
+function saveMessageToFirebase(chatId, cipherTextHex, ivHex, fromUsername, displayName) { //saves encrypted message to firebase. Firebase never sees plaintext-only ciphertext. IV(initialization vector) is needed to decrypt later
+    db.ref('chats/' + chatId + '/messages').push({
+        cipherText: cipherTextHex,
+        iv: ivHex,
+        from: fromUsername,
+        displayName: displayName,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+    console.log('%c💾 Firebase STORE (encrypted only)', 'color:#ffd166;font-weight:bold',
+        { chatId, cipher: cipherTextHex.slice(0,16)+'...', iv: ivHex });
+}
+</script>
+
+<script type="module">
+import { ml_kem768 } from 'https://esm.sh/@noble/post-quantum@0.2.1/ml-kem'; //imports post-quantum encapsulation mechanism
+
+// FIX #1: Correct port — server.js runs on 8082, NOT 3000
+const WS_URL = 'ws://localhost:8082';
+
+// URL params
+const params   = new URLSearchParams(window.location.search);
+const chatName = params.get('name')   || 'Public Chat';
+const chatAvat = params.get('avatar') || '💬';
+const chatId   = (params.get('chat') || 'public').replace(/[.#$[\]]/g, '_');
+document.getElementById('chat-name').textContent   = chatName;
+document.getElementById('chat-avatar').textContent = chatAvat;
+
+// Auth guard
+const token      = localStorage.getItem('zipchat_token');
+const myUsername = localStorage.getItem('zipchat_username')     || 'me';
+const myDisplay  = localStorage.getItem('zipchat_display_name') || myUsername;
+if (!token) { window.location.href = 'index.html'; } //if no login token is found in localstorage, redirects to login page immediatley
+
+// State
+let myId = null, ws = null;
+let isRedirecting = false;
+let isConnecting  = false;
+
+const peerKeys     = new Map();
+const peerInfo     = new Map();
+const pendingKyber = new Map();
+
+// ── IndexedDB key storage ─────────────────────────────────────────────────────
+const IDB_NAME = 'zipchat_keys', IDB_STORE = 'aes_keys';
+
+function openKeyDB() {
+    return new Promise((res, rej) => {
+        const r = indexedDB.open(IDB_NAME, 1);
+        r.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+        r.onsuccess = e => res(e.target.result);
+        r.onerror   = e => rej(e.target.error);
+    });
+}
+async function saveKeyToIDB(keyId, bytes) {
+    const d = await openKeyDB();
+    d.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).put(Array.from(bytes), keyId);
+    console.log('%c💾 Key saved to IndexedDB','color:#1aff8c;font-weight:bold', keyId);
+}
+async function loadKeyFromIDB(keyId) {
+    const d = await openKeyDB();
+    return new Promise((res, rej) => {
+        const r = d.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(keyId);
+        r.onsuccess = e => res(e.target.result ? new Uint8Array(e.target.result) : null);
+        r.onerror   = e => rej(e.target.error);
+    });
+}
+async function deleteKeyFromIDB(keyId) {
+    const d = await openKeyDB();
+    d.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).delete(keyId);
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────────
+function connect() {
+    if (isRedirecting) return;
+    if (isConnecting)  return;
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+
+    isConnecting = true;
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+        isConnecting = false;
+        setStatus('Authenticating...','');
+        ws.send(JSON.stringify({ type:'auth_token', token }));
+    };
+
+    ws.onmessage = async (event) => {
+        let data;
+        try { data = JSON.parse(event.data); } catch { return; }
+
+        // FIX #2: Strip "relay:" prefix from incoming relayed messages so all
+        // handlers below work identically for both direct and relayed frames.
+        if (data.type && data.type.startsWith('relay:')) {
+            data = { ...data, type: data.type.slice(6) };
+        }
+
+        if (data.type === 'welcome')    { myId = data.clientId; return; }
+        if (data.type === 'auth_ok')    { setStatus('🔒 ML-KEM-768 · Waiting for peer','secure'); return; }
+
+        if (data.type === 'auth_failed') {
+            if (isRedirecting) return;
+            isRedirecting = true;
+            ws.onclose = null; ws.close();
+            localStorage.clear();
+            appendStatus('Session expired — redirecting...');
+            setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+            return;
+        }
+
+        if (data.type === 'peer_joined') {
+            peerInfo.set(data.peerId, { username: data.username, displayName: data.displayName });
+            appendStatus(data.displayName + ' joined');
+            setStatus('🟢 ' + data.displayName + ' online','online');
+            // Lower clientId is the initiator — starts the key exchange
+            if (myId < data.peerId) relay({ type:'kyber_hello' }, data.peerId);
+            setTimeout(() => { if (peerKeys.size > 0) enableInput(); }, 3000);
+            return;
+        }
+
+        if (data.type === 'peer_left') {
+            const info = peerInfo.get(data.peerId);
+            appendStatus((info?.displayName ?? 'Peer') + ' left');
+            peerKeys.delete(data.peerId);
+            peerInfo.delete(data.peerId);
+            pendingKyber.delete(data.peerId);
+            deleteKeyFromIDB(chatId + '_peer_' + data.peerId);
+            if (peerKeys.size === 0) { disableInput(); setStatus('🔒 ML-KEM-768 · Waiting for peer','secure'); }
+            return;
+        }
+
+        if (data.type === 'presence_list') {
+            // Optional: could update an online-users panel here
+            return;
+        }
+
+        // ── ML-KEM-768 key exchange ───────────────────────────────────────────
+        if (data.type === 'kyber_hello') {
+            const { publicKey, secretKey } = ml_kem768.keygen();
+            pendingKyber.set(data.from, { secretKey });
+            relay({ type:'kyber_pubkey', publicKey: Array.from(publicKey) }, data.from);
+            console.log('%c🤝 RESPONDER: sent pubkey','color:#ffd166;font-weight:bold', publicKey.length+' bytes');
+            return;
+        }
+
+        if (data.type === 'kyber_pubkey') {
+            const { cipherText, sharedSecret } = ml_kem768.encapsulate(new Uint8Array(data.publicKey));
+            await storePeerSecret(data.from, sharedSecret);
+            relay({ type:'kyber_ct', cipherText: Array.from(cipherText) }, data.from);
+            console.log('%c🤝 INITIATOR: encapsulated','color:#ffd166;font-weight:bold', toHex(sharedSecret));
+            appendStatus('🔐 ML-KEM-768 key exchange complete');
+            enableInput();
+            // FIX #3: Initiator also needs to try flushing history after key exchange
+            await flushHistoryBuffer();
+            return;
+        }
+
+        if (data.type === 'kyber_ct') {
+            const pending = pendingKyber.get(data.from);
+            if (!pending) return;
+            const sharedSecret = ml_kem768.decapsulate(new Uint8Array(data.cipherText), pending.secretKey);
+            pendingKyber.delete(data.from);
+            await storePeerSecret(data.from, sharedSecret);
+            console.log('%c🤝 RESPONDER: decapsulated','color:#ffd166;font-weight:bold', toHex(sharedSecret));
+            appendStatus('🔐 ML-KEM-768 key exchange complete');
+            enableInput();
+            await flushHistoryBuffer();
+            return;
+        }
+
+        // ── Incoming chat message ─────────────────────────────────────────────
+        if (data.type === 'chat') {
+            if (!peerKeys.has(data.from)) {
+                appendStatus('[message received before key exchange]');
+                return;
+            }
+            try {
+                const plain = await decrypt(data.cipherText, data.iv, data.from);
+                const info  = peerInfo.get(data.from);
+                appendMessage(plain, 'recv', info?.displayName ?? data.fromDisplayName ?? '?', data.fromUsername ?? '?');
+            } catch (e) {
+                console.error('[decryption error]', e);
+                appendStatus('[decryption failed — message from a different session]');
+            }
+        }
+    };
+
+    ws.onerror = (err) => {
+        isConnecting = false;
+        if (!isRedirecting) setStatus('Connection error — is server.js running on port 8082?','');
+        console.error('[WS error]', err);
+    };
+
+    ws.onclose = () => {
+        isConnecting = false;
+        if (!isRedirecting) {
+            setStatus('Disconnected','');
+            disableInput();
+        }
+    };
+}
+
+connect();
+
+// ── Firebase history ──────────────────────────────────────────────────────────
+const historyBuffer = [];
+let historyLoaded   = false;
+
+function loadHistory() {
+    db.ref('chats/' + chatId + '/messages')
+      .orderByChild('timestamp')
+      .limitToLast(50)
+      .once('value', snapshot => {
+          const raw = snapshot.val();
+          if (!raw || typeof raw !== 'object') { historyLoaded = true; return; }
+
+          const entries = Object.values(raw)
+              .filter(m => m && m.cipherText && m.iv && m.from)
+              .sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
+
+          if (entries.length === 0) { historyLoaded = true; return; }
+
+          console.log('%c📂 Firebase history loaded','color:#ffd166;font-weight:bold',
+              entries.length + ' encrypted messages');
+          entries.forEach(m => historyBuffer.push(m));
+          historyLoaded = true;
+      });
+}
+
+async function flushHistoryBuffer() {
+    if (historyBuffer.length === 0) return;
+    if (peerKeys.size === 0) return;
+
+    let decrypted = 0;
+    const remaining = [];
+
+    for (const m of historyBuffer) {
+        let decryptedText = null;
+        const hexToBytes = hex => new Uint8Array(hex.match(/.{2}/g).map(h => parseInt(h,16)));
+
+        for (const [peerId] of peerKeys) {
+            try {
+                const ctBytes = hexToBytes(m.cipherText);
+                const ivBytes = hexToBytes(m.iv);
+                decryptedText = await decrypt(Array.from(ctBytes), Array.from(ivBytes), peerId);
+                break;
+            } catch {}
+        }
+
+        if (decryptedText !== null) {
+            const dir = m.from === myUsername ? 'sent' : 'recv';
+            appendMessage(decryptedText, dir, m.displayName || m.from, m.from, m.timestamp);
+            decrypted++;
+        } else {
+            remaining.push(m);
+        }
+    }
+
+    historyBuffer.length = 0;
+    remaining.forEach(m => historyBuffer.push(m));
+
+    if (decrypted > 0) {
+        appendStatus('✅ ' + decrypted + ' history messages loaded');
+        console.log('%c✅ History decrypted','color:#1aff8c;font-weight:bold', decrypted + ' messages');
+    }
+}
+
+loadHistory();
+
+// ── Crypto helpers ────────────────────────────────────────────────────────────
+const toHex = bytes => Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
+
+async function storePeerSecret(peerId, sharedSecretBytes) {
+    if (peerKeys.has(peerId)) return;
+    const keyBytes   = new Uint8Array(sharedSecretBytes);
+    const encryptKey = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['encrypt']);
+    const decryptKey = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']);
+    peerKeys.set(peerId, { encryptKey, decryptKey });
+    await saveKeyToIDB(chatId + '_peer_' + peerId, keyBytes);
+    console.group('%c🔐 AES-256-GCM key ready','color:#00e5ff;font-weight:bold');
+    console.log('Peer:', peerId, '| Secret:', toHex(keyBytes), '| Stored: IndexedDB');
+    console.groupEnd();
+}
+
+async function encrypt(text, peerId) {
+    const { encryptKey } = peerKeys.get(peerId);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, encryptKey, new TextEncoder().encode(text));
+    const cipherText = new Uint8Array(ct);
+    console.log('%c📤 ENCRYPT','color:#1aff8c;font-weight:bold',
+        '| plain:', text, '| iv:', toHex(iv), '| cipher:', toHex(cipherText).slice(0,16)+'...');
+    return { cipherText, iv };
+}
+
+async function decrypt(ctArr, ivArr, peerId) {
+    const { decryptKey } = peerKeys.get(peerId);
+    const plain = await crypto.subtle.decrypt(
+        { name:'AES-GCM', iv: new Uint8Array(ivArr) },
+        decryptKey,
+        new Uint8Array(ctArr)
+    );
+    const text = new TextDecoder().decode(plain);
+    console.log('%c📥 DECRYPT','color:#00e5ff;font-weight:bold', '| plain:', text);
+    return text;
+}
+
+function relay(payload, toPeerId) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ ...payload, to: toPeerId }));
+    }
+}
+
+// ── Send ──────────────────────────────────────────────────────────────────────
+async function sendMessage() {
+    const input = document.getElementById('message');
+    const text  = input.value.trim();
+    if (!text) return;
+
+    if (peerKeys.size === 0) {
+        appendStatus('[No peer connected — waiting for someone to join]');
+        return;
+    }
+
+    input.value = '';
+    appendMessage(text, 'sent', myDisplay, myUsername);
+
+    for (const [peerId] of peerKeys) {
+        try {
+            const { cipherText, iv } = await encrypt(text, peerId);
+            relay({ type:'chat', cipherText: Array.from(cipherText), iv: Array.from(iv) }, peerId);
+            saveMessageToFirebase(chatId, toHex(cipherText), toHex(iv), myUsername, myDisplay);
+        } catch (e) { console.error('[encrypt error]', e); }
+    }
+}
+window.sendMessage = sendMessage;
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function appendMessage(text, dir, displayName, username, timestamp) {
+    const msgs = document.getElementById('messages');
+    const ts   = timestamp
+        ? new Date(timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
+        : new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    const isMe = dir === 'sent';
+    const g    = document.createElement('div');
+    g.className = 'msg-group ' + dir;
+    g.innerHTML =
+        '<div class="msg-meta">' +
+            '<span class="sender' + (isMe?' me':'') + '">' + esc(displayName) + '</span>' +
+            '<span>@' + esc(username) + '</span>' +
+            '<span>' + ts + '</span>' +
+        '</div>' +
+        '<div class="bubble">' + esc(text) + '</div>';
+    msgs.appendChild(g);
+    msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendStatus(text) {
+    const msgs = document.getElementById('messages');
+    const el   = document.createElement('div');
+    el.className = 'status-pill'; el.textContent = text;
+    msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight;
+}
+
+function setStatus(msg, cls) {
+    const el = document.getElementById('chat-status');
+    el.textContent = msg; el.className = 'header-status ' + (cls||'');
+}
+
+function enableInput() {
+    document.getElementById('message').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('message').focus();
+    setStatus('🔒 ML-KEM-768 + AES-256-GCM','secure');
+}
+
+function disableInput() {
+    document.getElementById('message').disabled = true;
+    document.getElementById('sendBtn').disabled = true;
+}
+
+function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+</script>
+</body>
+</html>
