@@ -38,7 +38,7 @@
         .msg-group{display:flex;flex-direction:column;margin-bottom:8px;}
         .msg-group.sent{align-items:flex-end;}
         .msg-group.recv{align-items:flex-start;}
-        .msg-meta{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;gap:5px;}
+        .msg-meta{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
         .msg-meta .sender{font-weight:600;color:var(--text);}
         .msg-meta .sender.me{color:var(--accent);}
         .msg-meta .sig-badge{font-size:.55rem;padding:1px 5px;border-radius:4px;background:rgba(26,255,140,.12);color:var(--green);border:1px solid rgba(26,255,140,.2);}
@@ -47,9 +47,10 @@
         @keyframes pop{from{opacity:0;transform:scale(.94) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
         .msg-group.sent .bubble{background:var(--sent);border:1px solid rgba(0,229,255,.1);border-bottom-right-radius:4px;}
         .msg-group.recv .bubble{background:var(--recv);border:1px solid var(--border);border-bottom-left-radius:4px;}
-        .status-pill{align-self:center;font-family:var(--mono);font-size:.62rem;color:var(--muted);padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;margin:6px 0;}
+        .status-pill{align-self:center;font-family:var(--mono);font-size:.62rem;color:var(--muted);padding:4px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;margin:6px 0;text-align:center;max-width:90%;}
         .status-pill.warn{color:var(--red);border-color:rgba(255,69,96,.3);}
         .status-pill.ok{color:var(--green);border-color:rgba(26,255,140,.3);}
+        .status-pill.fp{color:#ffd166;border-color:rgba(255,213,0,.3);font-size:.58rem;letter-spacing:.03em;}
         .input-bar{display:flex;align-items:center;padding:10px 12px;border-top:1px solid var(--border);background:var(--surface2);gap:10px;}
         .input-bar input{flex:1;padding:11px 16px;background:var(--bg);border:1px solid var(--border);border-radius:24px;color:var(--text);font-family:var(--sans);font-size:.88rem;outline:none;transition:border-color .18s;}
         .input-bar input:focus{border-color:var(--accent);}
@@ -69,7 +70,6 @@
             <div class="header-name" id="chat-name">Loading...</div>
             <div class="header-status" id="chat-status">Connecting...</div>
         </div>
-        <!-- ✅ SECURITY BADGE PANEL — shows all 4 active protections -->
         <div class="sec-badges">
             <div class="enc-pill"><div class="enc-pill-dot"></div>ML-KEM-768</div>
             <div class="enc-pill dsa"><div class="enc-pill-dot"></div>ML-DSA-65</div>
@@ -105,12 +105,11 @@ firebase.initializeApp({
 const db = firebase.database();
 
 // ✅ METADATA PROTECTION — No username/displayName stored in Firebase
-// Only ciphertext + iv + timestamp (anonymous)
 function saveMessageToFirebase(chatId, cipherTextHex, ivHex, signatureHex) {
     db.ref('chats/' + chatId + '/messages').push({
         cipherText: cipherTextHex,
         iv:         ivHex,
-        sig:        signatureHex,          // store signature for history verification
+        sig:        signatureHex,
         timestamp:  firebase.database.ServerValue.TIMESTAMP
         // ❌ NO 'from', NO 'displayName' — metadata protected
     });
@@ -121,26 +120,27 @@ function saveMessageToFirebase(chatId, cipherTextHex, ivHex, signatureHex) {
 
 <script type="module">
 // ══════════════════════════════════════════════════════════════════════════════
-//  ZipChat — Quantum-Safe Chat Client
+//  ZipChat — Quantum-Safe Chat Client (FINAL VERSION)
 //
-//  Security features implemented:
-//  ✅ 1. WSS (wss://) — Transport-layer TLS encryption
-//  ✅ 2. ML-KEM-768  — Post-quantum key encapsulation (NIST 2024)
-//  ✅ 3. ML-DSA-65   — Post-quantum digital signatures / Dilithium (NIST 2024)
-//  ✅ 4. PFS via HKDF — Per-message key derivation (Perfect Forward Secrecy)
-//  ✅ 5. AES-256-GCM — Authenticated symmetric encryption
-//  ✅ 6. Metadata protection — padding, dummy traffic, no Firebase identity
+//  Security features:
+//  ✅ 1.  WSS / TLS          — Transport encryption (wss://)
+//  ✅ 2.  ML-KEM-768         — Post-quantum key encapsulation (NIST 2024)
+//  ✅ 3.  ML-DSA-65          — Post-quantum digital signatures (NIST 2024)
+//  ✅ 4.  PFS via HKDF       — Per-message key derivation
+//  ✅ 5.  AES-256-GCM        — Authenticated symmetric encryption
+//  ✅ 6.  Key fingerprints   — MITM detection (SHA-256 of peer pubkey)
+//  ✅ 7.  Replay protection  — Reject duplicate message counters
+//  ✅ 8.  Metadata protection — Padding + dummy traffic + no Firebase identity
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { ml_kem768 } from 'https://esm.sh/@noble/post-quantum@0.2.1/ml-kem';
 import { ml_dsa65  } from 'https://esm.sh/@noble/post-quantum@0.2.1/ml-dsa';
 
-// ✅ SECURITY 1 — WSS: Use wss:// instead of ws:// for TLS transport encryption
-// In production point this to your domain: wss://yourdomain.com
-// For local dev with self-signed cert: wss://localhost:8082
-// To generate cert: openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+// ✅ FIX 3 — NOTE: In production, download noble-pq.js locally and import from './noble-pq.js'
+// This removes CDN dependency. For FYP demo, CDN is acceptable.
+
 const WS_URL = 'wss://localhost:8082';
-// ⚠️  If your server.js doesn't have TLS yet, temporarily use ws:// and add TLS per server.js instructions
+// ⚠️ Change to ws://localhost:8082 only if cert.pem/key.pem not yet set up
 
 // ── URL params ────────────────────────────────────────────────────────────────
 const params   = new URLSearchParams(window.location.search);
@@ -162,24 +162,22 @@ let isRedirecting = false, isConnecting = false;
 
 const peerInfo     = new Map();   // peerId → { username, displayName }
 const pendingKyber = new Map();   // peerId → { secretKey }
+const peerRatchets = new Map();   // peerId → { baseKey, encCounter, decCounter }
+const peerDSAKeys  = new Map();   // peerId → Uint8Array (their DSA public key)
 
-// ✅ SECURITY 3 — PFS: ratchet state instead of raw AES keys
-// Each peer gets: { baseKey (HKDF source), encCounter, decCounter }
-const peerRatchets    = new Map();
+// ✅ FIX 2 — REPLAY PROTECTION: track seen counters per peer
+const seenCounters = new Map();   // peerId → Set of already-processed counters
 
-// ✅ SECURITY 2 — ML-DSA-65: signing keypairs
-// My own signing keypair (generated once per session)
+// ── ML-DSA-65 signing keypair — generated fresh each session ──────────────────
 let myDSASecret = null;
 let myDSAPublic = null;
-const peerDSAKeys = new Map();   // peerId → Uint8Array (their public key)
 
-// ── Generate ML-DSA-65 signing keypair on load ────────────────────────────────
 (function initDSA() {
     const { secretKey, publicKey } = ml_dsa65.keygen();
     myDSASecret = secretKey;
     myDSAPublic = publicKey;
-    console.log('%c🔑 ML-DSA-65 signing keypair generated','color:#a78bfa;font-weight:bold',
-        publicKey.length + ' byte public key');
+    console.log('%c🔑 ML-DSA-65 keypair generated','color:#a78bfa;font-weight:bold',
+        publicKey.length + ' byte pubkey');
 })();
 
 // ── IndexedDB key storage ─────────────────────────────────────────────────────
@@ -203,7 +201,7 @@ async function deleteKeyFromIDB(keyId) {
     d.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).delete(keyId);
 }
 
-// ── WebSocket ─────────────────────────────────────────────────────────────────
+// ── WebSocket connection ──────────────────────────────────────────────────────
 function connect() {
     if (isRedirecting || isConnecting) return;
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
@@ -221,12 +219,13 @@ function connect() {
         let data;
         try { data = JSON.parse(event.data); } catch { return; }
 
-        // Strip relay: prefix
+        // Strip relay: prefix from server-relayed messages
         if (data.type && data.type.startsWith('relay:')) {
             data = { ...data, type: data.type.slice(6) };
         }
 
-        if (data.type === 'welcome')  { myId = data.clientId; return; }
+        if (data.type === 'welcome') { myId = data.clientId; return; }
+
         if (data.type === 'auth_ok') {
             setStatus('🔒 ML-KEM-768 + ML-DSA-65 · Waiting for peer', 'secure');
             return;
@@ -258,6 +257,7 @@ function connect() {
             peerDSAKeys.delete(data.peerId);
             peerInfo.delete(data.peerId);
             pendingKyber.delete(data.peerId);
+            seenCounters.delete(data.peerId);
             deleteKeyFromIDB(chatId + '_peer_' + data.peerId);
             if (peerRatchets.size === 0) {
                 disableInput();
@@ -268,12 +268,12 @@ function connect() {
 
         if (data.type === 'presence_list') return;
 
-        // ── ML-KEM-768 key exchange ───────────────────────────────────────────
+        // ── ML-KEM-768 handshake ──────────────────────────────────────────────
         if (data.type === 'kyber_hello') {
             const { publicKey, secretKey } = ml_kem768.keygen();
             pendingKyber.set(data.from, { secretKey });
             relay({ type: 'kyber_pubkey', publicKey: Array.from(publicKey) }, data.from);
-            console.log('%c🤝 RESPONDER: sent pubkey','color:#ffd166;font-weight:bold');
+            console.log('%c🤝 RESPONDER: sent KEM pubkey','color:#ffd166;font-weight:bold');
             return;
         }
 
@@ -281,10 +281,7 @@ function connect() {
             const { cipherText, sharedSecret } = ml_kem768.encapsulate(new Uint8Array(data.publicKey));
             await storePeerRatchet(data.from, sharedSecret);
             relay({ type: 'kyber_ct', cipherText: Array.from(cipherText) }, data.from);
-
-            // ✅ SECURITY 2 — After key exchange, exchange DSA public keys
             relay({ type: 'dsa_pubkey', publicKey: Array.from(myDSAPublic) }, data.from);
-
             console.log('%c🤝 INITIATOR: encapsulated + sent DSA pubkey','color:#ffd166;font-weight:bold');
             appendStatus('🔐 ML-KEM-768 key exchange complete');
             return;
@@ -296,10 +293,7 @@ function connect() {
             const sharedSecret = ml_kem768.decapsulate(new Uint8Array(data.cipherText), pending.secretKey);
             pendingKyber.delete(data.from);
             await storePeerRatchet(data.from, sharedSecret);
-
-            // ✅ SECURITY 2 — Responder also sends DSA pubkey
             relay({ type: 'dsa_pubkey', publicKey: Array.from(myDSAPublic) }, data.from);
-
             console.log('%c🤝 RESPONDER: decapsulated + sent DSA pubkey','color:#ffd166;font-weight:bold');
             appendStatus('🔐 ML-KEM-768 key exchange complete');
             enableInput();
@@ -307,20 +301,38 @@ function connect() {
             return;
         }
 
-        // ✅ SECURITY 2 — Receive peer's DSA public key
+        // ✅ FIX 1 — PEER DSA PUBKEY + KEY FINGERPRINT
         if (data.type === 'dsa_pubkey') {
-            peerDSAKeys.set(data.from, new Uint8Array(data.publicKey));
+            const pubkeyBytes = new Uint8Array(data.publicKey);
+            peerDSAKeys.set(data.from, pubkeyBytes);
+
+            // Compute SHA-256 fingerprint of peer's public key
+            const hashBuffer  = await crypto.subtle.digest('SHA-256', pubkeyBytes);
+            const hashBytes   = Array.from(new Uint8Array(hashBuffer));
+            const fingerprint = hashBytes
+                .slice(0, 8)
+                .map(b => b.toString(16).padStart(2, '0').toUpperCase())
+                .join(':');
+
+            const info = peerInfo.get(data.from);
+            const name = info?.displayName ?? 'Peer';
+
             console.log('%c🔑 ML-DSA-65 peer pubkey stored','color:#a78bfa;font-weight:bold',
-                'from:', data.from);
-            appendStatus('✅ ML-DSA-65 signing keys exchanged');
+                'fingerprint:', fingerprint);
+
+            // Show fingerprint in chat — user should verify this out-of-band (e.g. over phone)
+            appendStatus('✅ ML-DSA-65 key exchange complete', 'ok');
+            appendStatus('🔑 ' + name + ' key fingerprint: ' + fingerprint, 'fp');
+            appendStatus('⚠️ Verify fingerprint with peer out-of-band to prevent MITM', '');
+
             enableInput();
             await flushHistoryBuffer();
             return;
         }
 
-        // ✅ SECURITY 5 — Metadata protection: silently drop dummy messages
+        // ✅ Silently absorb dummy traffic
         if (data.type === 'dummy') {
-            console.log('%c🕵️ Dummy traffic absorbed (metadata protection)','color:#4a5270');
+            console.log('%c🕵️ Dummy traffic absorbed','color:#4a5270');
             return;
         }
 
@@ -330,15 +342,26 @@ function connect() {
                 appendStatus('[message received before key exchange]');
                 return;
             }
+
+            // ✅ FIX 2 — REPLAY PROTECTION: reject duplicate counters
+            if (!seenCounters.has(data.from)) seenCounters.set(data.from, new Set());
+            const seen = seenCounters.get(data.from);
+            if (seen.has(data.counter)) {
+                appendStatus('🚨 Replay attack detected — duplicate message rejected', 'warn');
+                console.warn('[REPLAY PROTECTION] Duplicate counter', data.counter, 'from peer', data.from);
+                return;
+            }
+            seen.add(data.counter);
+
             try {
-                // ✅ SECURITY 3 — PFS: decrypt with per-message derived key
+                // ✅ PFS decrypt with per-message HKDF-derived key
                 const plain = await decryptPFS(
                     data.cipherText, data.iv,
                     data.counter, data.salt,
                     data.from
                 );
 
-                // ✅ SECURITY 2 — Verify ML-DSA-65 signature
+                // ✅ ML-DSA-65 signature verification
                 let sigValid = false;
                 if (data.signature && peerDSAKeys.has(data.from)) {
                     const msgBytes = new TextEncoder().encode(plain);
@@ -349,7 +372,7 @@ function connect() {
                     );
                     if (!sigValid) {
                         appendStatus('🚨 Signature FAILED — message rejected', 'warn');
-                        console.warn('[ML-DSA-65] Signature verification failed from', data.from);
+                        console.warn('[ML-DSA-65] Signature verification FAILED from peer', data.from);
                         return;
                     }
                 } else {
@@ -359,7 +382,7 @@ function connect() {
                 const info = peerInfo.get(data.from);
                 appendMessage(plain, 'recv',
                     info?.displayName ?? '?',
-                    info?.username ?? '?',
+                    info?.username    ?? '?',
                     null, sigValid);
 
             } catch (e) {
@@ -406,28 +429,24 @@ async function flushHistoryBuffer() {
     if (historyBuffer.length === 0 || peerRatchets.size === 0) return;
     let decrypted = 0;
     const remaining = [];
-    const hexToBytes = hex => new Uint8Array(hex.match(/.{2}/g).map(h => parseInt(h,16)));
+    const hexToBytes = hex => new Uint8Array(hex.match(/.{2}/g).map(h => parseInt(h, 16)));
 
     for (const m of historyBuffer) {
         let decryptedText = null;
         for (const [peerId] of peerRatchets) {
             try {
-                // History messages used a counter stored in Firebase
-                // For simplicity, try without PFS counter (legacy fallback)
-                const ratchet = peerRatchets.get(peerId);
-                const key = await deriveMessageKey(peerId, m.counter || 0, hexToBytes(m.salt || '00'.repeat(32)));
+                const key   = await deriveMessageKey(peerId, m.counter || 0, hexToBytes(m.salt || '00'.repeat(32)));
                 const plain = await crypto.subtle.decrypt(
                     { name: 'AES-GCM', iv: hexToBytes(m.iv) },
                     key,
                     hexToBytes(m.cipherText)
                 );
-                decryptedText = new TextDecoder().decode(plain);
+                decryptedText = new TextDecoder().decode(plain).replace(/\0+$/, '');
                 break;
             } catch {}
         }
         if (decryptedText !== null) {
-            // ✅ METADATA PROTECTION — no 'from' in Firebase, show as "peer"
-            appendMessage(decryptedText, 'recv', 'peer', 'history', m.timestamp, null);
+            appendMessage(decryptedText, 'recv', 'history', 'history', m.timestamp, null);
             decrypted++;
         } else {
             remaining.push(m);
@@ -440,28 +459,24 @@ async function flushHistoryBuffer() {
 
 loadHistory();
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Crypto helpers ────────────────────────────────────────────────────────────
 const toHex = bytes => Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
 
-// ✅ SECURITY 3 — PFS: Store shared secret as HKDF source key, not raw AES key
+// ✅ PFS: store shared secret as HKDF base key — never use raw secret directly
 async function storePeerRatchet(peerId, sharedSecretBytes) {
     if (peerRatchets.has(peerId)) return;
     const keyBytes = new Uint8Array(sharedSecretBytes);
     const baseKey  = await crypto.subtle.importKey(
-        'raw', keyBytes,
-        { name: 'HKDF' },
-        false,
-        ['deriveKey']
+        'raw', keyBytes, { name: 'HKDF' }, false, ['deriveKey']
     );
-    // encCounter = keys used for encryption, decCounter = keys used for decryption
     peerRatchets.set(peerId, { baseKey, encCounter: 0, decCounter: 0 });
     await saveKeyToIDB(chatId + '_peer_' + peerId, keyBytes);
     console.group('%c🔐 PFS Ratchet ready','color:#00e5ff;font-weight:bold');
-    console.log('Peer:', peerId, '| Base key stored | PFS enabled');
+    console.log('Peer:', peerId, '| HKDF base key stored | PFS enabled');
     console.groupEnd();
 }
 
-// ✅ SECURITY 3 — Derive a unique AES key per message using HKDF + counter + random salt
+// ✅ PFS: derive unique AES-256-GCM key per message using HKDF + counter + random salt
 async function deriveMessageKey(peerId, counter, salt) {
     const ratchet = peerRatchets.get(peerId);
     const info    = new TextEncoder().encode('zipchat-msg-' + counter);
@@ -474,16 +489,15 @@ async function deriveMessageKey(peerId, counter, salt) {
     );
 }
 
-// ✅ SECURITY 3 + SECURITY 6 — Encrypt with PFS key + message padding
+// ✅ Encrypt with PFS key + pad message to hide real length
 async function encryptPFS(text, peerId) {
-    const ratchet  = peerRatchets.get(peerId);
-    const counter  = ratchet.encCounter++;
-    const salt     = crypto.getRandomValues(new Uint8Array(32));
-    const iv       = crypto.getRandomValues(new Uint8Array(12));
+    const ratchet = peerRatchets.get(peerId);
+    const counter = ratchet.encCounter++;
+    const salt    = crypto.getRandomValues(new Uint8Array(32));
+    const iv      = crypto.getRandomValues(new Uint8Array(12));
 
-    // ✅ METADATA PROTECTION — pad plaintext to nearest 256-byte block
-    // This hides the real message length from traffic analysis
-    const BLOCK = 256;
+    // Pad to nearest 256-byte block — hides message length from traffic analysis
+    const BLOCK  = 256;
     const padded = text.padEnd(Math.ceil((text.length + 1) / BLOCK) * BLOCK, '\0');
 
     const msgKey = await deriveMessageKey(peerId, counter, salt);
@@ -494,19 +508,14 @@ async function encryptPFS(text, peerId) {
     );
 
     console.log('%c📤 ENCRYPT (PFS)','color:#1aff8c;font-weight:bold',
-        '| counter:', counter, '| padded len:', padded.length, '| iv:', toHex(iv));
+        '| counter:', counter, '| padded:', padded.length, 'bytes | iv:', toHex(iv));
 
-    return {
-        cipherText: new Uint8Array(ct),
-        iv, counter,
-        salt        // send salt so receiver can derive same key
-    };
+    return { cipherText: new Uint8Array(ct), iv, counter, salt };
 }
 
-// ✅ SECURITY 3 — Decrypt using derived PFS key
+// ✅ Decrypt with PFS key — rederive same key using counter + salt
 async function decryptPFS(ctArr, ivArr, counter, saltArr, peerId) {
-    const salt   = new Uint8Array(saltArr);
-    const msgKey = await deriveMessageKey(peerId, counter, salt);
+    const msgKey = await deriveMessageKey(peerId, counter, new Uint8Array(saltArr));
     const plain  = await crypto.subtle.decrypt(
         { name: 'AES-GCM', iv: new Uint8Array(ivArr) },
         msgKey,
@@ -524,26 +533,25 @@ function relay(payload, toPeerId) {
     }
 }
 
-// ✅ SECURITY 4 — Dummy traffic: send fake encrypted message every 30s
-// This prevents traffic timing analysis (observer can't tell when real chat starts)
+// ✅ METADATA PROTECTION — dummy traffic every 30s to obscure communication timing
 setInterval(async () => {
     if (peerRatchets.size === 0) return;
     for (const [peerId] of peerRatchets) {
         try {
             const { cipherText, iv, counter, salt } = await encryptPFS('__dummy__', peerId);
             relay({
-                type: 'dummy',
+                type:       'dummy',
                 cipherText: Array.from(cipherText),
                 iv:         Array.from(iv),
                 counter,
-                salt:        Array.from(salt)
+                salt:       Array.from(salt)
             }, peerId);
             console.log('%c🕵️ Dummy sent (metadata protection)','color:#4a5270');
         } catch {}
     }
 }, 30000);
 
-// ── Send ──────────────────────────────────────────────────────────────────────
+// ── Send message ──────────────────────────────────────────────────────────────
 async function sendMessage() {
     const input = document.getElementById('message');
     const text  = input.value.trim();
@@ -555,17 +563,17 @@ async function sendMessage() {
     }
 
     input.value = '';
-    appendMessage(text, 'sent', myDisplay, myUsername, null, true); // own message always "verified"
+    appendMessage(text, 'sent', myDisplay, myUsername, null, true);
 
     for (const [peerId] of peerRatchets) {
         try {
-            // ✅ SECURITY 2 — Sign plaintext with ML-DSA-65 BEFORE encrypting
+            // ✅ Sign plaintext BEFORE encrypting (correct order)
             const msgBytes  = new TextEncoder().encode(text);
             const signature = ml_dsa65.sign(myDSASecret, msgBytes);
             console.log('%c✍️ ML-DSA-65 signed','color:#a78bfa;font-weight:bold',
                 'sig len:', signature.length);
 
-            // ✅ SECURITY 3 — Encrypt with PFS per-message key
+            // ✅ Encrypt with PFS per-message key
             const { cipherText, iv, counter, salt } = await encryptPFS(text, peerId);
 
             relay({
@@ -573,17 +581,12 @@ async function sendMessage() {
                 cipherText: Array.from(cipherText),
                 iv:         Array.from(iv),
                 counter,
-                salt:        Array.from(salt),
-                signature:   Array.from(signature)  // attach Dilithium signature
+                salt:       Array.from(salt),
+                signature:  Array.from(signature)
             }, peerId);
 
-            // ✅ METADATA PROTECTION — save to Firebase without identity
-            saveMessageToFirebase(
-                chatId,
-                toHex(cipherText),
-                toHex(iv),
-                toHex(signature)
-            );
+            // ✅ Save to Firebase — no identity metadata
+            saveMessageToFirebase(chatId, toHex(cipherText), toHex(iv), toHex(signature));
 
         } catch (e) { console.error('[encrypt/sign error]', e); }
     }
@@ -600,17 +603,16 @@ function appendMessage(text, dir, displayName, username, timestamp, sigValid) {
     const g    = document.createElement('div');
     g.className = 'msg-group ' + dir;
 
-    // Show signature verification badge on received messages
     let sigBadge = '';
     if (dir === 'recv') {
-        if (sigValid === true)       sigBadge = '<span class="sig-badge">✓ DSA verified</span>';
+        if      (sigValid === true)  sigBadge = '<span class="sig-badge">✓ DSA verified</span>';
         else if (sigValid === false) sigBadge = '<span class="sig-badge sig-fail">✗ DSA FAIL</span>';
         else                         sigBadge = '<span class="sig-badge" style="opacity:.4">⚠ unverified</span>';
     }
 
     g.innerHTML =
         '<div class="msg-meta">' +
-            '<span class="sender' + (isMe?' me':'') + '">' + esc(displayName) + '</span>' +
+            '<span class="sender' + (isMe ? ' me' : '') + '">' + esc(displayName) + '</span>' +
             '<span>@' + esc(username) + '</span>' +
             '<span>' + ts + '</span>' +
             sigBadge +
@@ -632,12 +634,12 @@ function appendStatus(text, type) {
 function setStatus(msg, cls) {
     const el = document.getElementById('chat-status');
     el.textContent = msg;
-    el.className   = 'header-status ' + (cls||'');
+    el.className   = 'header-status ' + (cls || '');
 }
 
 function enableInput() {
-    document.getElementById('message').disabled  = false;
-    document.getElementById('sendBtn').disabled  = false;
+    document.getElementById('message').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
     document.getElementById('message').focus();
     setStatus('🔒 ML-KEM-768 · ML-DSA-65 · PFS · WSS', 'secure');
 }
