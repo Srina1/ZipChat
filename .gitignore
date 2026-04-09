@@ -1,0 +1,9 @@
+﻿node_modules/
+key.pem
+cert.pem
+__pycache__/
+.venv/
+*.pyc
+*.log
+openssl
+-subj
