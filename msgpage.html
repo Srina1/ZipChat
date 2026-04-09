@@ -104,14 +104,14 @@ firebase.initializeApp({
 });
 const db = firebase.database();
 
-// ✅ METADATA PROTECTION — No username/displayName stored in Firebase
+// METADATA PROTECTION — No username/displayName stored in Firebase
 function saveMessageToFirebase(chatId, cipherTextHex, ivHex, signatureHex) {
     db.ref('chats/' + chatId + '/messages').push({
         cipherText: cipherTextHex,
         iv:         ivHex,
         sig:        signatureHex,
         timestamp:  firebase.database.ServerValue.TIMESTAMP
-        // ❌ NO 'from', NO 'displayName' — metadata protected
+        // NO 'from', NO 'displayName' — metadata protected
     });
     console.log('%c💾 Firebase STORE (metadata-protected)', 'color:#ffd166;font-weight:bold',
         { cipher: cipherTextHex.slice(0,16)+'...', sig: signatureHex.slice(0,16)+'...' });
@@ -123,24 +123,24 @@ function saveMessageToFirebase(chatId, cipherTextHex, ivHex, signatureHex) {
 //  ZipChat — Quantum-Safe Chat Client (FINAL VERSION)
 //
 //  Security features:
-//  ✅ 1.  WSS / TLS          — Transport encryption (wss://)
-//  ✅ 2.  ML-KEM-768         — Post-quantum key encapsulation (NIST 2024)
-//  ✅ 3.  ML-DSA-65          — Post-quantum digital signatures (NIST 2024)
-//  ✅ 4.  PFS via HKDF       — Per-message key derivation
-//  ✅ 5.  AES-256-GCM        — Authenticated symmetric encryption
-//  ✅ 6.  Key fingerprints   — MITM detection (SHA-256 of peer pubkey)
-//  ✅ 7.  Replay protection  — Reject duplicate message counters
-//  ✅ 8.  Metadata protection — Padding + dummy traffic + no Firebase identity
+//   1.  WSS / TLS          — Transport encryption (wss://)
+//  2.  ML-KEM-768         — Post-quantum key encapsulation (NIST 2024)
+//  3.  ML-DSA-65          — Post-quantum digital signatures (NIST 2024)
+//  4.  PFS via HKDF       — Per-message key derivation
+//  5.  AES-256-GCM        — Authenticated symmetric encryption
+//  6.  Key fingerprints   — MITM detection (SHA-256 of peer pubkey)
+//  7.  Replay protection  — Reject duplicate message counters
+//  8.  Metadata protection — Padding + dummy traffic + no Firebase identity
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { ml_kem768 } from 'https://esm.sh/@noble/post-quantum@0.2.1/ml-kem';
 import { ml_dsa65  } from 'https://esm.sh/@noble/post-quantum@0.2.1/ml-dsa';
 
-// ✅ FIX 3 — NOTE: In production, download noble-pq.js locally and import from './noble-pq.js'
+// FIX 3 — NOTE: In production, download noble-pq.js locally and import from './noble-pq.js'
 // This removes CDN dependency. For FYP demo, CDN is acceptable.
 
 const WS_URL = 'wss://localhost:8082';
-// ⚠️ Change to ws://localhost:8082 only if cert.pem/key.pem not yet set up
+//  Change to ws://localhost:8082 only if cert.pem/key.pem not yet set up
 
 // ── URL params ────────────────────────────────────────────────────────────────
 const params   = new URLSearchParams(window.location.search);
@@ -165,7 +165,7 @@ const pendingKyber = new Map();   // peerId → { secretKey }
 const peerRatchets = new Map();   // peerId → { baseKey, encCounter, decCounter }
 const peerDSAKeys  = new Map();   // peerId → Uint8Array (their DSA public key)
 
-// ✅ FIX 2 — REPLAY PROTECTION: track seen counters per peer
+// FIX 2 — REPLAY PROTECTION: track seen counters per peer
 const seenCounters = new Map();   // peerId → Set of already-processed counters
 
 // ── ML-DSA-65 signing keypair — generated fresh each session ──────────────────

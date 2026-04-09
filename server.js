@@ -116,9 +116,6 @@ wss.on('connection', (ws, req) => {
 });
 
 server.listen(PORT, () => {
-    console.log(`\n┌─────────────────────────────────────────────┐`);
-    console.log(`│  ZipChat WebSocket Server — FINAL VERSION   │`);
-    console.log(`│  ${usingTLS?'wss':'ws'}://localhost:${PORT}                       │`);
-    console.log(`│  TLS: ${usingTLS ? '✅ ENABLED' : '❌ DISABLED (dev)'}                        │`);
-    console.log(`└─────────────────────────────────────────────┘\n`);
+    console.log(`ZipChat WebSocket Server running at ${usingTLS ? 'wss' : 'ws'}://localhost:${PORT}`);
+    console.log(`TLS: ${usingTLS ? 'ENABLED' : 'DISABLED (dev)'}`);
 });

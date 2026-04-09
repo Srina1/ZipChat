@@ -141,8 +141,8 @@ def _extract_bearer():
     return auth.replace('Bearer ', '').strip()
 
 if __name__ == '__main__':
-    print('\n┌─────────────────────────────────────────────┐')
-    print('│  ZipChat Auth Server — FINAL VERSION        │')
-    print('│  http://localhost:3000                      │')
-    print('└─────────────────────────────────────────────┘\n')
-    app.run(port=3000, debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true')
+    print("ZipChat Auth Server running at http://localhost:3000")
+    app.run(
+        port=3000,
+        debug=os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    )
