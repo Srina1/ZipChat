@@ -1,19 +1,4 @@
-# ══════════════════════════════════════════════════════════════════════════════
-#  ZipChat — Auth Backend (auth_server.py) — FINAL VERSION
-#
-#  Security features:
-#  ✅ 1. bcrypt password hashing (rounds=12)
-#  ✅ 2. Two-factor authentication — password + OTP
-#  ✅ 3. Short-lived temp tokens (5 min) + full session tokens (24hr)
-#  ✅ 4. OTP rate limiting — lockout after 5 failed attempts
-#  ✅ 5. Cryptographically secure OTP — secrets module (not random)
-#  ✅ 6. Timing-safe OTP comparison — secrets.compare_digest
-#  ✅ 7. Token scope enforcement — temp tokens rejected at /verify-token
-#  ✅ 8. User enumeration protection — same error for bad user + bad password
-#
-#  Install:  pip install flask flask-cors bcrypt pyjwt
-#  Run:      python auth_server.py
-# ══════════════════════════════════════════════════════════════════════════════
+
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS

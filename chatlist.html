@@ -7,16 +7,17 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:      #08090c;
-            --surface: #10131a;
-            --surface2:#141820;
-            --border:  #1e2336;
-            --accent:  #00e5ff;
-            --accent2: #6c3fff;
-            --text:    #dde3f0;
-            --muted:   #4a5270;
-            --red:     #ff4560;
-            --green:   #1aff8c;
+            --bg:      #f0f4ff;
+            --surface: #ffffff;
+            --surface2:#f7f9ff;
+            --border:  #dde3f8;
+            --accent:  #4f46e5;
+            --accent2: #7c3aed;
+            --accent3: #06b6d4;
+            --text:    #1e1b4b;
+            --muted:   #6b7280;
+            --red:     #ef4444;
+            --green:   #10b981;
             --mono:    'IBM Plex Mono', monospace;
             --sans:    'Syne', sans-serif;
         }
@@ -36,34 +37,34 @@
             content: '';
             position: fixed; inset: 0; z-index: 0;
             background-image:
-                linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
-            background-size: 44px 44px;
+                radial-gradient(circle at 10% 0%, rgba(79,70,229,0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 100%, rgba(124,58,237,0.06) 0%, transparent 40%);
             pointer-events: none;
         }
 
         .app {
             position: relative; z-index: 1;
-            width: 100%; max-width: 440px;
+            width: 100%; max-width: 460px;
             min-height: 100vh;
             background: var(--surface);
             border-left: 1px solid var(--border);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
+            box-shadow: 0 0 40px rgba(79,70,229,0.08);
         }
 
         .header {
-            padding: 20px 20px 14px;
+            padding: 22px 20px 16px;
             border-bottom: 1px solid var(--border);
-            background: var(--surface2);
+            background: linear-gradient(180deg, #fff 0%, var(--surface2) 100%);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .header-left h1 {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 800;
             background: linear-gradient(120deg, var(--accent), var(--accent2));
             background-clip: text;
@@ -75,7 +76,7 @@
             font-family: var(--mono);
             font-size: 0.68rem;
             color: var(--muted);
-            margin-top: 3px;
+            margin-top: 4px;
         }
 
         .header-right {
@@ -84,19 +85,38 @@
             gap: 10px;
         }
 
+        .online-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: rgba(16,185,129,0.08);
+            border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 20px;
+        }
+
         .online-dot {
-            width: 8px; height: 8px;
+            width: 7px; height: 7px;
             border-radius: 50%;
             background: var(--green);
             animation: blink 2.5s infinite;
         }
+
+        .online-text {
+            font-family: var(--mono);
+            font-size: 0.58rem;
+            font-weight: 600;
+            color: #059669;
+            letter-spacing: 0.5px;
+        }
+
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
         .btn-logout {
-            padding: 6px 12px;
+            padding: 7px 13px;
             background: transparent;
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 8px;
             color: var(--muted);
             font-family: var(--mono);
             font-size: 0.65rem;
@@ -104,52 +124,75 @@
             letter-spacing: 1px;
             transition: all 0.18s;
         }
-        .btn-logout:hover { border-color: var(--red); color: var(--red); }
+        .btn-logout:hover {
+            border-color: rgba(239,68,68,0.4);
+            color: var(--red);
+            background: rgba(239,68,68,0.04);
+        }
 
         .search-box {
             padding: 12px 16px;
             border-bottom: 1px solid var(--border);
+            background: var(--surface);
         }
         .search-box input {
             width: 100%;
-            padding: 10px 14px;
+            padding: 10px 16px 10px 38px;
             background: var(--bg);
-            border: 1px solid var(--border);
+            border: 1.5px solid var(--border);
             border-radius: 24px;
             color: var(--text);
             font-family: var(--mono);
             font-size: 0.82rem;
             outline: none;
-            transition: border-color 0.18s;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 13px center;
         }
-        .search-box input:focus { border-color: var(--accent); }
-        .search-box input::placeholder { color: var(--muted); }
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+            background-color: #fff;
+        }
+        .search-box input::placeholder { color: #b0b7c9; }
+
+        .section-label {
+            padding: 10px 18px 6px;
+            font-family: var(--mono);
+            font-size: 0.58rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #b0b7c9;
+            font-weight: 600;
+        }
 
         .chat-list { flex: 1; overflow-y: auto; }
         .chat-list::-webkit-scrollbar { width: 3px; }
-        .chat-list::-webkit-scrollbar-thumb { background: var(--border); }
+        .chat-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
         .chat {
             display: flex;
             align-items: center;
-            padding: 14px 18px;
+            padding: 13px 18px;
             cursor: pointer;
             border-bottom: 1px solid var(--border);
             transition: background 0.15s;
-            gap: 14px;
+            gap: 13px;
         }
         .chat:hover { background: var(--surface2); }
-        .chat:active { background: #1a1f2e; }
+        .chat:active { background: #eef0ff; }
 
         .avatar {
-            width: 46px; height: 46px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent2), #9f6fff);
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem;
-            font-weight: 700;
+            font-weight: 800;
             color: #fff;
             flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.25);
         }
 
         .chat-info { flex: 1; min-width: 0; }
@@ -162,10 +205,11 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            color: var(--text);
         }
         .chat-info p {
             font-family: var(--mono);
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--muted);
             white-space: nowrap;
             overflow: hidden;
@@ -173,35 +217,57 @@
             margin-top: 3px;
         }
 
-        .time {
-            font-family: var(--mono);
-            font-size: 0.65rem;
-            color: var(--muted);
+        .chat-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
             flex-shrink: 0;
         }
 
+        .time {
+            font-family: var(--mono);
+            font-size: 0.62rem;
+            color: #b0b7c9;
+        }
+
         .unread-badge {
-            background: var(--red);
+            background: var(--accent);
             color: white;
             border-radius: 10px;
-            padding: 1px 6px;
+            padding: 2px 7px;
             font-family: var(--mono);
-            font-size: 0.65rem;
-            min-width: 18px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            min-width: 20px;
             text-align: center;
             display: none;
         }
 
         .enc-footer {
-            padding: 10px;
+            padding: 12px;
             text-align: center;
             font-family: var(--mono);
             font-size: 0.6rem;
             color: var(--muted);
             border-top: 1px solid var(--border);
             letter-spacing: 1px;
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
-        .enc-footer span { color: var(--accent); }
+
+        .enc-footer-icon {
+            width: 14px; height: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+        }
     </style>
 </head>
 <body>
@@ -212,85 +278,103 @@
             <p id="username-display">Loading...</p>
         </div>
         <div class="header-right">
-            <div class="online-dot"></div>
+            <div class="online-indicator">
+                <div class="online-dot"></div>
+                <span class="online-text">ONLINE</span>
+            </div>
             <button class="btn-logout" onclick="doLogout()">LOGOUT</button>
         </div>
     </div>
 
     <div class="search-box">
-        <input type="text" placeholder="Search chats..." id="search-input">
+        <input type="text" placeholder="Search conversations..." id="search-input">
     </div>
 
     <div class="chat-list" id="chat-list">
-        <div class="chat" onclick="goToChat('public', 'Public Chat', 'P')">
+        <div class="section-label" data-section="channels">Channels</div>
+
+        <div class="chat" data-section="channels" onclick="goToChat('public', 'Public Chat', 'P')">
             <div class="avatar">P</div>
             <div class="chat-info">
                 <h3>Public Chat <span id="public-unread" class="unread-badge"></span></h3>
-                <p>Kyber + AES Post-Quantum Secure</p>
+                <p>Heyy</p>
             </div>
-            <div class="time">Now</div>
+            <div class="chat-right">
+                <div class="time">Now</div>
+            </div>
         </div>
 
-        <div class="chat" onclick="goToChat('tech', 'Tech Chat', 'T')">
-            <div class="avatar">T</div>
+        <div class="chat" data-section="channels" onclick="goToChat('tech', 'Tech Chat', 'T')">
+            <div class="avatar" style="background: linear-gradient(135deg,#0891b2,#06b6d4)">T</div>
             <div class="chat-info">
                 <h3>Tech Chat <span id="tech-unread" class="unread-badge"></span></h3>
-                <p>Post-Quantum Cryptography</p>
+                <p>Whats up</p>
             </div>
-            <div class="time">10:30</div>
+            <div class="chat-right">
+                <div class="time">10:30</div>
+            </div>
         </div>
 
-        <div class="chat" onclick="goToChat('homie', 'Homie', 'H')">
-            <div class="avatar" style="background: linear-gradient(135deg,#ff6b6b,#ee5a24)">H</div>
+        <div class="chat" data-section="channels" onclick="goToChat('security', 'Security Chat', 'S')">
+            <div class="avatar" style="background: linear-gradient(135deg,#7c3aed,#a855f7)">S</div>
+            <div class="chat-info">
+                <h3>Security Chat <span id="security-unread" class="unread-badge"></span></h3>
+                <p>..........</p>
+            </div>
+            <div class="chat-right">
+                <div class="time">5:23</div>
+            </div>
+        </div>
+
+        <div class="section-label" data-section="dms">Direct Messages</div>
+
+        <div class="chat" data-section="dms" onclick="goToChat('homie', 'Homie', 'H')">
+            <div class="avatar" style="background: linear-gradient(135deg,#f97316,#ef4444)">H</div>
             <div class="chat-info">
                 <h3>Homie <span id="homie-unread" class="unread-badge"></span></h3>
                 <p>Hello</p>
             </div>
-            <div class="time">10:37</div>
+            <div class="chat-right">
+                <div class="time">10:37</div>
+            </div>
         </div>
 
-        <div class="chat" onclick="goToChat('college', 'College', 'C')">
-            <div class="avatar" style="background: linear-gradient(135deg,#f9ca24,#f0932b)">C</div>
+        <div class="chat" data-section="dms" onclick="goToChat('college', 'College', 'C')">
+            <div class="avatar" style="background: linear-gradient(135deg,#f59e0b,#f97316)">C</div>
             <div class="chat-info">
                 <h3>College <span id="college-unread" class="unread-badge"></span></h3>
                 <p>Mail</p>
             </div>
-            <div class="time">4:29</div>
+            <div class="chat-right">
+                <div class="time">4:29</div>
+            </div>
         </div>
 
-        <div class="chat" onclick="goToChat('john', 'John', 'J')">
-            <div class="avatar" style="background: linear-gradient(135deg,#6ab04c,#1e8449)">J</div>
+        <div class="chat" data-section="dms" onclick="goToChat('john', 'John', 'J')">
+            <div class="avatar" style="background: linear-gradient(135deg,#10b981,#059669)">J</div>
             <div class="chat-info">
                 <h3>John <span id="john-unread" class="unread-badge"></span></h3>
                 <p>Hi</p>
             </div>
-            <div class="time">8:30</div>
+            <div class="chat-right">
+                <div class="time">8:30</div>
+            </div>
         </div>
 
-        <div class="chat" onclick="goToChat('fun', 'Fun', 'F')">
-            <div class="avatar" style="background: linear-gradient(135deg,#e056fd,#7d3c98)">F</div>
+        <div class="chat" data-section="dms" onclick="goToChat('fun', 'Fun', 'F')">
+            <div class="avatar" style="background: linear-gradient(135deg,#ec4899,#a855f7)">F</div>
             <div class="chat-info">
                 <h3>Fun <span id="fun-unread" class="unread-badge"></span></h3>
                 <p>Haha</p>
             </div>
-            <div class="time">1:30</div>
-        </div>
-
-        <div class="chat" onclick="goToChat('security', 'Security Chat', 'S')">
-            <div class="avatar">S</div>
-            <div class="chat-info">
-                <h3>Security Chat <span id="security-unread" class="unread-badge"></span></h3>
-                <p>E2EE Demo Active</p>
+            <div class="chat-right">
+                <div class="time">1:30</div>
             </div>
-            <div class="time">5:23</div>
         </div>
     </div>
-
-    <div class="enc-footer">🔐 <span>KYBER + AES-256-GCM</span> · ALL CHATS END-TO-END ENCRYPTED</div>
 </div>
 
 <script>
-// FIX: Single token check, redirect to index.html (not welcome.html)
 const token       = localStorage.getItem('zipchat_token');
 const username    = localStorage.getItem('zipchat_username') || 'Guest';
 const displayName = localStorage.getItem('zipchat_display_name') || username;
@@ -301,12 +385,22 @@ if (!token) {
 
 document.getElementById('username-display').textContent = `${displayName}  ·  @${username}`;
 
+// FIX 5: Hide section labels when all chats in that section are hidden
 document.getElementById('search-input').addEventListener('input', function () {
     const term = this.value.toLowerCase();
+
     document.querySelectorAll('.chat').forEach(chat => {
         const title = chat.querySelector('h3').textContent.toLowerCase();
         const desc  = chat.querySelector('p').textContent.toLowerCase();
         chat.style.display = (title.includes(term) || desc.includes(term)) ? 'flex' : 'none';
+    });
+
+    // Hide section label if no visible chats belong to it
+    document.querySelectorAll('.section-label').forEach(label => {
+        const section = label.dataset.section;
+        const hasVisible = [...document.querySelectorAll(`.chat[data-section="${section}"]`)]
+            .some(c => c.style.display !== 'none');
+        label.style.display = hasVisible ? '' : 'none';
     });
 });
 

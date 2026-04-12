@@ -1,10 +1,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
-//  ZipChat — WebSocket Server (server.js) — FINAL VERSION
+//  ZipChat — WebSocket Server (server.js)
 //
 //  ✅ WSS (wss://) — WebSocket over TLS
 //  ✅ JWT auth via auth_server.py
 //  ✅ Relay-only — server never sees plaintext
 //  ✅ Auth timeout — unauthenticated connections closed after 10s
+//  ✅ FIX: auth_ok now sends clientId so client myId stays in sync
 //
 //  Install:  npm install ws node-fetch
 //  TLS cert: openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
@@ -51,6 +52,8 @@ wss.on('connection', (ws, req) => {
     } catch { chatId = 'public'; }
 
     console.log(`[connect] client ${clientId} → room: ${chatId}`);
+
+    // FIX: Send clientId in welcome so client sets myId immediately and correctly
     ws.send(JSON.stringify({ type: 'welcome', clientId }));
 
     const authTimeout = setTimeout(() => { if (!authed) ws.close(); }, 10000);
@@ -73,6 +76,8 @@ wss.on('connection', (ws, req) => {
 
                 const clients = getRoomClients(chatId);
                 clients.set(clientId, { ws, username, displayName });
+
+                // FIX: Include clientId in auth_ok so client can re-confirm myId
                 ws.send(JSON.stringify({ type: 'auth_ok', clientId }));
 
                 for (const [peerId, peer] of clients) {
@@ -80,7 +85,7 @@ wss.on('connection', (ws, req) => {
                     ws.send(JSON.stringify({ type:'peer_joined', peerId, chatId, username: peer.username, displayName: peer.displayName }));
                     peer.ws.send(JSON.stringify({ type:'peer_joined', peerId: clientId, chatId, username, displayName }));
                 }
-                console.log(`[auth_ok] ${username} → room: ${chatId}`);
+                console.log(`[auth_ok] ${username} (id:${clientId}) → room: ${chatId}`);
             } catch (e) {
                 console.error('[auth error]', e.message);
                 ws.send(JSON.stringify({ type: 'auth_failed' })); ws.close();
